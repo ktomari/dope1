@@ -1,5 +1,7 @@
 # This script creates the internal data set.
 
+library(dplyr)
+
 # Institutions ----
 # Isr Institution Regular Expressions.
 # These are an (incomplete) list of Isr institutions and the regular expressions that can be used to match strings.
@@ -231,5 +233,6 @@ usethis::use_data(
   inst_strings,
   neg_funds,
   pos_funds,
+  internal = TRUE,
   overwrite = TRUE
 )
