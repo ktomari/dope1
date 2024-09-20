@@ -1,2 +1,10 @@
 ^dope1\.Rproj$
 ^\.Rproj\.user$
+^LICENSE\.md$
+^README\.Rmd$
+^data-raw
+^docs
+^data-raw$
+^inst/extdata/~.*\.xlsx$
+^renv$
+^renv\.lock$

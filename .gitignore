@@ -48,3 +48,11 @@ po/*~
 # RStudio Connect folder
 rsconnect/
 .Rproj.user
+
+# custom
+.httr-oauth
+.DS_Store
+.quarto
+/data-raw/sandbox
+inst/doc
+inst/extdata/~*.xlsx
