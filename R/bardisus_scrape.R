@@ -19,7 +19,7 @@ replace_inst <- function(
   insts_ <- insts_ %>%
     dplyr::arrange(
       dplyr::desc(
-        stringr::str_length(string_match)))
+        stringr::str_length(`string_match`)))
 
   # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # primary algo
@@ -50,9 +50,9 @@ replace_inst <- function(
       # to see if `y` has a match in `string_match`
       for(i in 1:nrow(insts_)){
         # See if string_match is in there.
-        match_found_ <- str_detect(
+        match_found_ <- stringr::str_detect(
           string = y,
-          pattern = insts_$string_match[i]
+          pattern = insts_$`string_match`[i]
           )
 
         # If string_match is in there,
@@ -60,7 +60,7 @@ replace_inst <- function(
         if(match_found_){
           y <- stringr::str_replace(
             string = y,
-            pattern = insts_$string_match[i],
+            pattern = insts_$`string_match`[i],
             replacement = paste0(
               "[",
               insts_$conversion[i],
