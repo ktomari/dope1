@@ -100,7 +100,7 @@ clean_author_insts <- function(
   # Add ID column to help keep track of things
   # Give it an ID
   dat <- dat %>%
-    dplyr::mutate(id = 1:n()) %>%
+    dplyr::mutate(id = 1:dplyr::n()) %>%
     dplyr::select(id, dplyr::everything())
 
   # Get table of string-matches
