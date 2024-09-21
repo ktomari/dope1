@@ -28,7 +28,7 @@ vect_detect <- function(
 #' Find and score text for "BARD".
 #'
 #' @description
-#' Using regular expressions, searches for phrases in the `dopepal::neg_funds` or `dopepal::pos_funds`, which is internal data created in data-raw/DATASET.R
+#' Using regular expressions, searches for phrases in the `dope1::neg_funds` or `dope1::pos_funds`, which is internal data created in data-raw/DATASET.R
 #'
 #' @param vect character vector. The text to be searched.
 #' @param pos logical. Do we search for signs that the string contains references to US-Isr BARD? Or do we search for "negative" signs that the string refers to some other Bard?
@@ -47,9 +47,11 @@ score_BARD <- function(
     # assign name of package data.frame for regex search.
     # (This is internal data to the package. See data-raw/DATASET.R)
 
-    regex_data <- dopepal::pos_funds
+    regex_data <- get("pos_funds",
+                      envir = asNamespace("dope1"))
   } else {
-    regex_data <- dopepal::neg_funds
+    regex_data <- get("neg_funds",
+                      envir = asNamespace("dope1"))
   }
 
   # Go through each undivided string.
