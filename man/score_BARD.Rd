@@ -17,5 +17,5 @@ score_BARD(vect, pos = TRUE, brk = NULL)
 a numeric vector with the same length of \code{vect}.
 }
 \description{
-Using regular expressions, searches for phrases in the \code{dopepal::neg_funds} or \code{dopepal::pos_funds}, which is internal data created in data-raw/DATASET.R
+Using regular expressions, searches for phrases in the \code{dope1::neg_funds} or \code{dope1::pos_funds}, which is internal data created in data-raw/DATASET.R
 }
