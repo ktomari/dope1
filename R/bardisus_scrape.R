@@ -82,3 +82,139 @@ replace_inst <- function(
   # return
   out
 }
+
+#' @title BARD-ISUS Author-Institution cleaner.
+#'
+#' @description Scraping the approved proposal/project information from BARD-ISUS results in a very dirty dataset with respect to the "author" and "institution" information. The typical format appears as: "J. Jones U Alabama", but this is hardly a standard easily remedied. This algorithm first takes a table of strings of institutions to match and replace. Then it assumes what is left over is the author name.
+#' @param dat is the bard-isus data.frame
+#' @return data.frame
+#' @export
+clean_author_insts <- function(
+    dat
+){
+  # input validation
+  stopifnot(inherits(dat, "data.frame"))
+
+  stopifnot("Authors" %in% names(dat))
+
+  # Add ID column to help keep track of things
+  # Give it an ID
+  dat <- dat %>%
+    dplyr::mutate(id = 1:n()) %>%
+    dplyr::select(id, dplyr::everything())
+
+  # Get table of string-matches
+  inst_strings <- get("inst_strings",
+                      envir = asNamespace("dope1"))
+
+  # Run replace_inst ----
+  # Identify all institutions.
+  # This step takes several seconds.
+  # This works as of 2024-09-20.
+  dat <- dat %>%
+    dplyr::mutate(
+      Authors2 = dope1::replace_inst(`Authors`,
+                                     inst_strings))
+
+  # Create new author and institution columns
+  dat <- dat %>%
+    # Create institutions_ ----
+    dplyr::mutate(institutions_ = purrr::map_chr(Authors2, function(x){
+
+      if(is.na(x)){
+        return(as.character(NA))
+      }
+
+      split_ <- stringr::str_split_1(x, "\\;") %>%
+        stringr::str_squish()
+
+      split_ <- split_[split_ != ""]
+
+      split_ <- purrr::map_chr(split_, function(y){
+        stringr::str_extract(y, "\\[[^\\]]+\\]") %>%
+          stringr::str_remove_all("\\[|\\]")
+      })
+
+      paste0(split_, collapse = "; ")
+    })) %>%
+    # Create authors_ ----
+    dplyr::mutate(authors_ = purrr::map_chr(Authors2, function(x){
+      if(is.na(x)){
+        return(as.character(NA))
+      }
+
+      split_ <- stringr::str_split_1(x, "\\;") %>%
+        stringr::str_squish()
+
+      split_ <- split_[split_ != ""]
+
+      split_ <- purrr::map_chr(split_, function(y){
+        stringr::str_remove(y, "\\[[^\\]]+\\]") %>%
+          stringr::str_squish()
+      })
+
+      paste0(split_, collapse = "; ")
+    }))
+
+  # 4 Categories ----
+  # 1) NA
+  # 2) normal
+  # 3) first initial missing
+  # 4) last-name appears first
+
+  dat$authors_ <- purrr::map_chr(dat$authors_, function(auths){
+    if(is.na(auths)){
+      return(as.character(NA))
+    }
+
+    # split "A. Sagi; R. Dunham" into "A. Sagi"   "R. Dunham"
+    split_ <- dope1::split_str(auths)
+
+    # now examine each string to see if manipulations are required.
+    out <- purrr::map_chr(split_, function(au){
+      # First check to see if it has a standard format.
+      standard_ <- stringr::str_detect(au, "^[[:alpha:]]\\.")
+
+      # It has a standard start? return() early.
+      if(standard_){
+        return(au)
+      }
+
+      # Does it begin with a period? Remove it.
+      dot_ <- stringr::str_detect(au, "^\\.")
+
+      if(dot_){
+        au <- stringr::str_remove(au, "^\\.") %>%
+          stringr::str_squish()
+      }
+
+      # Does it begin with a long name (ie. not initials)?
+      last_first <- stringr::str_detect(au, "^[^,.]{2,}\\,")
+
+      if(last_first){
+        last_ <- stringr::str_extract(au, "^[^,]+")
+        first_ <- stringr::str_remove(au, "^[^,]+\\,") %>%
+          stringr::str_squish()
+
+        if(stringr::str_detect(first_, "\\.$", negate = T)){
+          first_ <- paste0(first_, ".")
+        }
+
+        au <- paste0(first_, " ", last_) %>%
+          stringr::str_squish()
+      }
+
+      # return
+      au
+    })
+
+    paste0(out, collapse = "; ")
+  })
+
+  dat <- dat %>%
+    dplyr::arrange(id) %>%
+    dplyr::select(-Authors2, -id)
+
+  # return
+  dat
+}
